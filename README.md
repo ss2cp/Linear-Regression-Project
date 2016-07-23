@@ -86,7 +86,7 @@ F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 *Intercept*, *x2*, and *x5* all have *p-values* of (< 2e-16), *x3* has p-value of 2.46e-14, and *x4* has p-value of 2.01e-05. 
 The *overall p-value* is (< 2.2e-16). These *p-values* are all less than 0.05 and significant. 
 
-*R-Square* is 0.955, which means the **model represents 95.5% of the data**.
+*R-Square* is 0.955, which means **model represents 95.5% of the data**.
 
 ## Detailed Procedures
 #### Read in data and fit the originial data to a model
@@ -426,4 +426,4 @@ The final model is
 
 All of the above *p-values* are less than 0.05 and significant. 
 
-*R-Square* is 0.955, which means the model represents 95.5% of the data. The model fits the data very well.
+*R-Square* is 0.955, which means **model represents 95.5% of the data**. Model fits the data very well.
