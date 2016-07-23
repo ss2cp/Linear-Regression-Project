@@ -19,7 +19,7 @@ There are 100 intances of data, in total of 100 rows. See the data on [Appendix 
 
 The analysis method used are:
 
-* Linear Transformation
+* Log Transformation
 * Detecting Outliers in Predictors with leverages
 * Detecting Infuential Observations with DFFITS and Cook's Distance
 * Automated Forward Selection Procedure
