@@ -1,0 +1,592 @@
+---
+title: "STAT 5120 Final Project"
+author: "Shaoran Sun"
+date: "May 8, 2016"
+output: 
+  pdf_document: 
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
+---
+\newpage
+
+#Introduction
+This report is to build and select a model for the response y, using the generated data set "dat.cvs" given by the course instructor. Most of the tools studied in course STAT 5120 (Linear Regression) will be used to facilitate model selection, model estimation, model validation, and model diagnosis procedures. This report is written by Shaoran Sun individually. 
+
+#Materials and methods
+Data is given by the instructor. Data contains one response variable, $y$, and 10 predictors, $x_1, x_2, \dots, x_{10}$.
+There are 100 intances of data, in total of 100 rows. See the data on [Appendix I](#data)
+
+The analysis method used are:
+
+* Linear Transformation
+* Detecting Outliers in Predictors with leverages
+* Detecting Infuential Observations with DFFITS and Cook's Distance
+* Automated Forward Selection Procedure
+* Diagnosing Multicollinearity with Variance Inflation Factor (VIF)
+* General Linear F Test
+
+The criteria for statistical significance is $P<0.05$.
+
+
+#Results
+With the given data set "dat.cvs", 
+
+* y is log-transformed
+* Entry 10 is reomoved due to large influence to the overall data
+* Predictors x1, x6, x7, x8, x9, and x10 are $removed$ due to insignificance.
+* Predictors x2, x3, x4,and x5 are kept, and combined as a first order model.
+
+The final model is: $$\mathbf{y=2.00 \cdot x_2+0.91\cdot x_3 +0.40 \cdot x_4 + 3.35\cdot x_5 +1.51}$$
+
+\includegraphics[height=5cm]{S.png}
+
+The intercept, x2, and x5 all have $p$-values of $(< 2e-16)$, x3 has $p$-value of $2.46e-14$, and x4 has $p$-value of $2.01e-05$. The overall $p$-value is $(< 2.2e-16)$. These $p$-values are all less than 0.05 and significant. 
+
+The $R^2$ is 0.955, which means the model represents 95.5% of the data.
+
+#Detailed Procedures
+
+## Read in data and fit the originial data to a model
+
+I first plot in all 10 variables in responsing to y. All the $p$-values to the variables are greater than 0.05, which indicates that none of the variable is significant. 
+
+The 5 assumptions about linear regression are:
+
+1. There exists a linear relation between the response and predictor variable(s).
+2. The error terms have the constant variance
+3. The error terms are independent, have mean 0.
+4. Model fits all observations well (no outliers).
+5. The errors follow a Normal distribution.
+
+The Residuals vs Fitted graph suggested that residuals do not fall in a horizontal band around 0, and they have an apparent pattern. Assumption 1 and 3 are not met. 
+
+The residuals also do not have similar vertical variation across fits. Assumption 2 is not met.
+
+Hence, we consider using a boxcox transformation to test for log-likelihood.
+
+```{r,echo=FALSE}
+dat <- read.csv("~/Desktop/5120 Final/dat.csv")
+attach(dat)
+dat.lm=lm(dat$y~.,data=dat)
+summary(dat.lm)
+par(mfrow=c(2,2))
+plot(dat.lm)
+```
+
+
+##Boxcox transformation
+As we can see from the boxcox graph, $\lambda$ is very close to 0. So we consider a log-transformation.
+
+```{r,echo=FALSE}
+par(mfrow=c(1,1))
+library(MASS)
+boxcox(dat.lm, plotit = TRUE)
+```
+
+##Fit the log-transformed y
+After the transformation, some of the predictors are starting to become significant, namely, x3, x5, and intercept. The overall $p$-value also becomes very significant, comparing to before the transformaiton, where $p$-value = 0.36.
+
+```{r,echo=FALSE,warning=FALSE, message=FALSE}
+dat$y=log(dat$y)
+dat.lm=lm(dat$y~.,data=dat)
+summary(dat.lm)
+par(mfrow=c(2,2))
+plot(dat.lm)
+attach(dat)
+```
+
+##Detect and remove outliers
+Next, I will detect outliers.
+
+From the above graphs, we can see that outliers definitely exist, possibly, data 10.
+
+Obtain leverages and two measures that can be used to identify influential points, DFFITS (difference in fts) and Cook's Distance.
+```{r,echo=FALSE, include=FALSE}
+dat.lm$residuals
+tmp<-lm.influence(dat.lm)
+tmp$hat[tmp$hat>2*10/100]
+
+DFFITS<-dffits(dat.lm)
+DFFITS[DFFITS>1]
+dat[DFFITS>1,]
+
+COOKS<-cooks.distance(dat.lm)
+round(COOKS,3)
+COOKS>qf(0.5,10,90)
+```
+
+From the output of influence, DFFITS (difference in fts), and Cook's Distance, we can see that observation 10 is indeed an influential outlier. Hence we remove it.
+
+After removing observation 10, the model fits the data better than before, as we can see in the following output table. Next, we will be choosing which predictors are actually significant.
+
+```{r,echo=FALSE}
+no10<- dat[-10, ]
+no10.lm=lm(no10$y~.,data=no10)
+summary(no10.lm)
+```
+
+##Check for multicolinearity issue
+```{r,echo=FALSE}
+round(cor(no10),3)
+library(faraway)
+vif(no10.lm)
+```
+We can see that x1 and x2 are highly correlated with 0.999 correlation, and 515 VIFs, which is way greater than 10, the threshold. We will next apply automated search to search for significant predictors. If x1 and x2 are both in the result, we will remove one of them in the final predictors.
+
+##Use automated search
+Now I use automated search, after removing data 10 from the data set.
+```{r,echo=FALSE}
+data=no10
+start<-lm(y~1, data=data)
+end<-lm(y~.,data=data)
+result<-step(start, scope=list(lower=start, upper=end), direction="forward", trace=FALSE)
+summary(result)
+```
+Using automated forward search, we get x2, x3, x4, and x5 are chosen, among which all are significant with $p$-values way less than 0.05. The over all fitting of the 4 predictors results in a $p$-value of < 2.2e-16. This proves that after log-transformation, removing data 10 and automated forward selection, the model fits better. x1 and x2 are not both in the result, so there is no multicolinearity issue.
+
+##Model Comparison and Selection
+Next, we will check use techniques in Model Comparison and Selection, by comparing R2.adj, PRESS, AIC, BIC, and Cp. We will be using data after removing outlier and log-transformation. 
+```{r,echo=FALSE,warning=FALSE,include=FALSE}
+dat=data
+attach(dat)
+
+##################################################
+##STEP 1: create design matrix for maximal model##
+##################################################
+
+x<-cbind(Const=1, x1, x2,x3,x4,x5,x6,x7,x8,x9,x10)
+y<-y
+
+###########################################################################################
+##STEP 2: logical matrix to indicate for each possible model, which predictors are in/out##
+###########################################################################################
+
+models<-matrix(F, 2^10, 10) ##10 predictors, change accordingly
+dimnames(models)<-list(NULL, c("x1","x2","x3","x4","x5","x6","x7","x8","x9","x10"))
+
+row<-0
+
+for (a in c(F,T)) { ##loop has 10 for statements, one for each predictor
+  for (b in c(F,T)) {
+    for (c in c(F,T)) {
+      for (d in c(F,T)) {
+        for (e in c(F,T)) {
+          for (f in c(F,T)) {
+            for (g in c(F,T)) {
+              for (h in c(F,T)) {
+                for (i in c(F,T)) {
+                  for (j in c(F,T)) {
+row<-row+1
+models[row,]<-c(a,b,c,d,e,f,g,h,i,j)
+}}}}}}}}}}
+
+#################################################
+##STEP 3: Matrix to store results from criteria##
+#################################################
+
+results<-matrix(NA, 2^10, 7) ##10 predictors, store 7 statistics
+dimnames(results)<-list(NULL, c("p","R2","R2.adj","PRESS","AIC","BIC","Cp"))
+
+#################################
+##STEP 4: MSE for maximal model##
+#################################
+
+tmp<-lsfit(x,y,intercept=F)
+n<-nrow(dat)
+p<-ncol(x)
+MSE.max<-sum(tmp$res^2)/(n-p)
+
+###################################
+##STEP 5: Fit all possible models##
+###################################
+
+time1<-Sys.time()
+
+for (i in 1:(2^10)){ ##10 predictors
+  which<-c(T, models[i,]) ##pull out the row of model and append an intercept
+  tmp<-lsfit(x[,which], y, intercept=F) ##fit the model and compute the criteria
+  p<-sum(which) ##number of parameters for chosen model
+  SSTo<-(n-1)*var(y)
+  MSTo<-var(y)
+  SSE<-sum(tmp$res^2)
+  MSE<-SSE/(n-p)
+  R2<-1-(SSE/SSTo)
+  R2.adj<-1-(MSE/MSTo)
+  hi<-ls.diag(tmp)$hat ##leverages
+  res.PRESS<-tmp$res/(1-hi)
+  PRESS<-sum(res.PRESS^2)
+  AIC<-n*log(SSE/n)+2*p
+  BIC<-n*log(SSE/n)+p*log(n)
+  Cp<-(SSE/MSE.max)-n+2*p
+  ##store the results
+  results[i,1]<-p
+  results[i,2]<-R2
+  results[i,3]<-R2.adj
+  results[i,4]<-PRESS
+  results[i,5]<-AIC
+  results[i,6]<-BIC
+  results[i,7]<-Cp
+  ##have R print out the iteration we are at
+  print(paste("run",i))}
+
+Sys.time()-time1 ##see how long it takes!
+
+################
+##Save results##
+################
+
+save(x,y,results,models,file="results.RData")
+
+######################
+##Give results names##
+######################
+
+p<-results[,1]
+R2<-results[,2]
+R2.adj<-results[,3]
+PRESS<-results[,4]
+AIC<-results[,5]
+BIC<-results[,6]
+Cp<-results[,7]
+
+###############################
+##Find model with best R2.adj##
+###############################
+
+i<-R2.adj == max(R2.adj) ##what index has the maximum R2.adj
+(1:2^10)[i] ##2^10 because 10 potential predictors
+round(results[i,],3)
+
+models[i,]
+
+############################################
+##Find model with best PRESS, AIC, BIC, Cp##
+############################################
+
+i2<-PRESS == min(PRESS) ##what index has the min PRESS
+(1:2^10)[i2] ##2^10 because 10 potential predictors
+
+i3<-AIC == min(AIC) ##what index has the min AIC
+(1:2^10)[i3] ##2^10 because 10 potential predictors
+
+i4<-BIC == min(BIC) ##what index has the min BIC
+(1:2^10)[i4] ##2^10 because 10 potential predictors
+
+i5<-Cp == min(Cp) ##what index has the min Cp
+(1:2^10)[i5] ##2^10 because 10 potential predictors
+
+
+models[i2,]
+models[i3,]
+models[i4,]
+models[i5,]
+
+###########################################
+##plot the residual against fitted values##
+###########################################
+
+dat489.lm=lm(y ~ x2+x3+x4+x5+x7)
+summary(dat489.lm)
+
+dat481.lm=lm(y ~ x2+x3+x4+x5)
+summary(dat481.lm)
+
+dat489.res=resid(dat489.lm) 
+par(mfrow=c(1,1))
+plot(y, dat489.res, ylab="Residuals", xlab="Fitted Value", main="Residual Plot") 
+abline(0, 0)                  # the horizon 
+
+dat481.res=resid(dat481.lm) 
+par(mfrow=c(1,1))
+plot(y, dat481.res, ylab="Residuals", xlab="Fitted Value", main="Residual Plot") 
+abline(0, 0)                  # the horizon 
+```
+After comparing all permutation's R2.adj, PRESS, AIC, BIC, and Cp. We have the following results:
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+\hline
+Permutation Number & Criteria & Result Predictors & $p$-value&R-squared\\
+\hline
+489 & R2.adj & x2+x3+x4+x5+x7 & < 2.2e-16 & 0.9556\\
+\hline
+481 & PRESS, AIC, BIC, Cp  & x2+x3+x4+x5    & < 2.2e-16 & 0.9550\\
+\hline
+\end{tabular}
+\end{center}
+
+##General F-test
+Model 481 is a reduced model of 489, with an extra x7. We apply a general F-test to test if x7 is significant.
+```{r,echo=FALSE}
+anova(dat481.lm,dat489.lm)
+```
+
+$p$-value is greater than 0.05. Hence, x7 is not significant, we only need x2, x3, x4, and x5.
+
+Finally, fit our final model again, and test for goodness of fit.
+
+```{r,echo=FALSE}
+par(mfrow=c(2,2))
+result.lm=lm(y ~ x2+x3+x4+x5)
+summary(result.lm)
+plot(result.lm)
+```
+\newpage
+
+#Conclusion
+With the given data set "dat.cvs", 
+
+* y is log-transformed
+* Entry 10 is reomoved due to large influence to the overall data
+* Predictors x1, x6, x7, x8, x9, and x10 are $removed$ due to insignificance.
+* Predictors x2, x3, x4,and x5 are kept, and combined as a first order model.
+
+The final model is: $$\mathbf{y=2.00 \cdot x_2+0.91\cdot x_3 +0.40 \cdot x_4 + 3.35\cdot x_5 +1.51}$$
+
+```{r,echo=FALSE}
+summary(result.lm)
+```
+
+\begin{center}
+\begin{tabular}{c|c}
+\hline
+Predictor & $P$-value \\
+\hline
+\hline
+intercept & $(< 2e-16)$ \\
+\hline
+x2 & $(< 2e-16)$ \\
+\hline
+x3 & $2.46e-14$ \\
+\hline
+x4 & $2.01e-05$  \\
+\hline
+x5 & $(< 2e-16)$  \\
+\hline
+\hline
+overall & $(< 2.2e-16)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+
+The intercept, x2, and x5 all have $p$-values of $(< 2e-16)$, x3 has $p$-value of $2.46e-14$, and x4 has $p$-value of $2.01e-05$. The overall $p$-value is $(< 2.2e-16)$. These $p$-values are all less than 0.05 and significant. 
+
+The $R^2$ is 0.955, which means the model represents 95.5% of the data. The model fits the data very well.
+
+\newpage
+
+#Appendix
+
+##Data
+```{r,echo=FALSE}
+read.csv("~/Desktop/5120 Final/dat.csv")
+```
+
+##R Code
+```{r}
+dat <- read.csv("~/Desktop/5120 Final/dat.csv")
+attach(dat)
+dat.lm=lm(dat$y~.,data=dat)
+summary(dat.lm)
+par(mfrow=c(2,2))
+plot(dat.lm)
+
+par(mfrow=c(1,1))
+library(MASS)
+boxcox(dat.lm, plotit = TRUE)
+
+dat$y=log(dat$y)
+dat.lm=lm(dat$y~.,data=dat)
+summary(dat.lm)
+par(mfrow=c(2,2))
+plot(dat.lm)
+attach(dat)
+
+dat.lm$residuals
+tmp<-lm.influence(dat.lm)
+tmp$hat[tmp$hat>2*10/100]
+
+DFFITS<-dffits(dat.lm)
+DFFITS[DFFITS>1]
+dat[DFFITS>1,]
+
+COOKS<-cooks.distance(dat.lm)
+round(COOKS,3)
+COOKS>qf(0.5,10,90)
+
+no10<- dat[-10, ]
+no10.lm=lm(no10$y~.,data=no10)
+summary(no10.lm)
+
+round(cor(no10),3)
+library(faraway)
+vif(no10.lm)
+
+data=no10
+start<-lm(y~1, data=data)
+end<-lm(y~.,data=data)
+result<-step(start, scope=list(lower=start, upper=end), direction="forward", trace=FALSE)
+summary(result)
+
+dat=data
+attach(dat)
+
+##################################################
+##STEP 1: create design matrix for maximal model##
+##################################################
+
+x<-cbind(Const=1, x1, x2,x3,x4,x5,x6,x7,x8,x9,x10)
+y<-y
+
+###########################################################################################
+##STEP 2: logical matrix to indicate for each possible model, which predictors are in/out##
+###########################################################################################
+
+models<-matrix(F, 2^10, 10) ##10 predictors, change accordingly
+dimnames(models)<-list(NULL, c("x1","x2","x3","x4","x5","x6","x7","x8","x9","x10"))
+
+row<-0
+
+for (a in c(F,T)) { ##loop has 10 for statements, one for each predictor
+  for (b in c(F,T)) {
+    for (c in c(F,T)) {
+      for (d in c(F,T)) {
+        for (e in c(F,T)) {
+          for (f in c(F,T)) {
+            for (g in c(F,T)) {
+              for (h in c(F,T)) {
+                for (i in c(F,T)) {
+                  for (j in c(F,T)) {
+row<-row+1
+models[row,]<-c(a,b,c,d,e,f,g,h,i,j)
+}}}}}}}}}}
+
+#################################################
+##STEP 3: Matrix to store results from criteria##
+#################################################
+
+results<-matrix(NA, 2^10, 7) ##10 predictors, store 7 statistics
+dimnames(results)<-list(NULL, c("p","R2","R2.adj","PRESS","AIC","BIC","Cp"))
+
+#################################
+##STEP 4: MSE for maximal model##
+#################################
+
+tmp<-lsfit(x,y,intercept=F)
+n<-nrow(dat)
+p<-ncol(x)
+MSE.max<-sum(tmp$res^2)/(n-p)
+
+###################################
+##STEP 5: Fit all possible models##
+###################################
+
+time1<-Sys.time()
+
+for (i in 1:(2^10)){ ##10 predictors
+  which<-c(T, models[i,]) ##pull out the row of model and append an intercept
+  tmp<-lsfit(x[,which], y, intercept=F) ##fit the model and compute the criteria
+  p<-sum(which) ##number of parameters for chosen model
+  SSTo<-(n-1)*var(y)
+  MSTo<-var(y)
+  SSE<-sum(tmp$res^2)
+  MSE<-SSE/(n-p)
+  R2<-1-(SSE/SSTo)
+  R2.adj<-1-(MSE/MSTo)
+  hi<-ls.diag(tmp)$hat ##leverages
+  res.PRESS<-tmp$res/(1-hi)
+  PRESS<-sum(res.PRESS^2)
+  AIC<-n*log(SSE/n)+2*p
+  BIC<-n*log(SSE/n)+p*log(n)
+  Cp<-(SSE/MSE.max)-n+2*p
+  ##store the results
+  results[i,1]<-p
+  results[i,2]<-R2
+  results[i,3]<-R2.adj
+  results[i,4]<-PRESS
+  results[i,5]<-AIC
+  results[i,6]<-BIC
+  results[i,7]<-Cp
+  ##have R print out the iteration we are at
+  print(paste("run",i))}
+
+Sys.time()-time1 ##see how long it takes!
+
+################
+##Save results##
+################
+
+save(x,y,results,models,file="results.RData")
+
+######################
+##Give results names##
+######################
+
+p<-results[,1]
+R2<-results[,2]
+R2.adj<-results[,3]
+PRESS<-results[,4]
+AIC<-results[,5]
+BIC<-results[,6]
+Cp<-results[,7]
+
+###############################
+##Find model with best R2.adj##
+###############################
+
+i<-R2.adj == max(R2.adj) ##what index has the maximum R2.adj
+(1:2^10)[i] ##2^10 because 10 potential predictors
+round(results[i,],3)
+
+models[i,]
+
+############################################
+##Find model with best PRESS, AIC, BIC, Cp##
+############################################
+
+i2<-PRESS == min(PRESS) ##what index has the min PRESS
+(1:2^10)[i2] ##2^10 because 10 potential predictors
+
+i3<-AIC == min(AIC) ##what index has the min AIC
+(1:2^10)[i3] ##2^10 because 10 potential predictors
+
+i4<-BIC == min(BIC) ##what index has the min BIC
+(1:2^10)[i4] ##2^10 because 10 potential predictors
+
+i5<-Cp == min(Cp) ##what index has the min Cp
+(1:2^10)[i5] ##2^10 because 10 potential predictors
+
+
+models[i2,]
+models[i3,]
+models[i4,]
+models[i5,]
+
+###########################################
+##plot the residual against fitted values##
+###########################################
+
+dat489.lm=lm(y ~ x2+x3+x4+x5+x7)
+summary(dat489.lm)
+
+dat481.lm=lm(y ~ x2+x3+x4+x5)
+summary(dat481.lm)
+
+dat489.res=resid(dat489.lm) 
+par(mfrow=c(1,1))
+plot(y, dat489.res, ylab="Residuals", xlab="Fitted Value", main="Residual Plot") 
+abline(0, 0)                  # the horizon 
+
+dat481.res=resid(dat481.lm) 
+par(mfrow=c(1,1))
+plot(y, dat481.res, ylab="Residuals", xlab="Fitted Value", main="Residual Plot") 
+abline(0, 0)                  # the horizon 
+
+anova(dat481.lm,dat489.lm)
+
+result.lm=lm(y ~ x2+x3+x4+x5)
+summary(result.lm)
+plot(result.lm)
+```
