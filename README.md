@@ -89,7 +89,7 @@ The *overall p-value* is (< 2.2e-16). These *p-values* are all less than 0.05 an
 *R-Square* is 0.955, which means **model represents 95.5% of the data**.
 
 ## Detailed Procedures
-#### Read in data and fit the original data to a model
+#### Step 1: Read in data and fit the original data to a model
 I first plot in all 10 variables in responding to y. All the *p-values* to the variables are greater than 0.05, which indicates that none of the variable is significant. 
 
 The 5 assumptions about linear regression are:
@@ -108,12 +108,12 @@ The residuals also do not have similar vertical variation across fits. Assumptio
 
 Hence, we consider using a *boxcox transformation* to test for log-likelihood.
 
-####Boxcox transformation
+####Step 2: Boxcox transformation
 As we can see from the boxcox graph, &#955; is very close to 0. So we consider a log-transformation.
 
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/boxcox.png" width="500">
 
-####Fit the log-transformed y
+####Step 3: Fit the log-transformed y
 
 After the transformation, some of the predictors are starting to become significant, namely, x3, x5, and intercept. The *overall p-value* also becomes very significant, comparing to before the transformation, where *p-value* = 0.36.
 
@@ -140,7 +140,7 @@ Multiple R-squared:  0.7508,	Adjusted R-squared:  0.7079
 F-statistic: 17.48 on 10 and 58 DF,  p-value: 4.289e-14
 ```
 
-####Detect and remove outliers
+####Step 4: Detect and remove outliers
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/fit.png" width="500">
 
 From the above graphs, we can see that outliers definitely exist, possibly, *data 10*.
@@ -219,7 +219,7 @@ Multiple R-squared:  0.9561,	Adjusted R-squared:  0.9511
 F-statistic: 191.6 on 10 and 88 DF,  p-value: < 2.2e-16
 ```
 
-####Check for multicollinearity issue
+####Step 5: Check for multicollinearity issue
 We can see that x1 and x2 are highly correlated with 0.999 correlation, and 515 VIFs, which is way greater than 10, the threshold. 
 
 We will next apply automated search to search for significant predictors. If x1 and x2 are both in the result, we will remove one of them in the final predictors.
@@ -238,7 +238,7 @@ x9  -0.096 -0.085 -0.088 -0.007  0.085 -0.087 -0.166 -0.068  0.044  1.000 -0.058
 x10  0.033  0.158  0.160 -0.069 -0.112 -0.042  0.100 -0.051  0.078 -0.058  1.000
 ```
 
-####Use automated search
+####Step 6: Use automated search
 Now I use automated search, after removing *data 10* from the data set.
 
 Using automated forward search, we get *x2, x3, x4, and x5* are chosen, among which all are significant with *p-values* way less than 0.05. The overall fitting of the 4 predictors results in a *p-value* of (< 2.2e-16). This proves that after log-transformation, removing data 10 and automated forward selection, the model fits better. *x1 and x2* are **NOT** both in the result, so there is no multicollinearity issue.
@@ -257,7 +257,7 @@ Residual standard error: 0.9338 on 94 degrees of freedom
 Multiple R-squared:  0.955,	Adjusted R-squared:  0.9531 
 F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 ```
-####Model Comparison and Selection
+####Step 7: Model Comparison and Selection
 Next, we will use techniques in Model Comparison and Selection, by comparing *R2.adj, PRESS, AIC, BIC, and Cp*. We will be using data after removing outlier and log-transformation. 
 ``` R
 > ###############################
@@ -364,7 +364,7 @@ Multiple R-squared:  0.955,	Adjusted R-squared:  0.9531
 F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 ```
 
-####General F-test
+####Step 8: General F-test
 Model 481 is a reduced model of 489, with an extra *x7*. We apply a *General F-test* to test if *x7* is significant.
 ```
 Analysis of Variance Table
