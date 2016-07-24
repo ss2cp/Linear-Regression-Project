@@ -45,7 +45,7 @@ There are 100 instances of data, in total of 100 rows.
 * Diagnosing Multicollinearity with Variance Inflation Factor (VIF)
 * General Linear F Test
 
-*Criteria for statistical significance is P<0.05.*
+**Criteria for statistical significance is P<0.05.*
 
 ##Results
 ####Final model
