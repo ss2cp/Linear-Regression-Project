@@ -6,7 +6,7 @@ Most of the tools studied in course STAT 5120 (Linear Regression) will be used t
 The code and report are written by Shaoran Sun individually. 
 
 **Data:** Data contains one response variable, y, and 10 predictors, x1, x2 ... x10.
-There are 100 intances of data, in total of 100 rows.
+There are 100 instances of data, in total of 100 rows.
 
 **Goal:** To build and select a model for the response y.
 
@@ -40,7 +40,7 @@ There are 100 intances of data, in total of 100 rows.
 ##Analysis methods
 * Log Transformation
 * Detecting Outliers in Predictors with leverages
-* Detecting Infuential Observations with DFFITS and Cook's Distance
+* Detecting Influential Observations with DFFITS and Cook's Distance
 * Automated Forward Selection Procedure
 * Diagnosing Multicollinearity with Variance Inflation Factor (VIF)
 * General Linear F Test
@@ -54,9 +54,9 @@ There are 100 intances of data, in total of 100 rows.
 
 ####Data Manipulations
 * *y* is log-transformed
-* *Entry 10* is reomoved due to large influence to the overall data
+* *Entry 10* is removed due to large influence to the overall data
 * Predictors *x1, x6, x7, x8, x9, and x10* are **removed** due to insignificance.
-* Predictors *x2, x3, x4,and x5* are kept, and combined as a first order model.
+* Predictors *x2, x3, x4, and x5* are kept, and combined as a first order model.
 
 ####Result Summary
 
@@ -89,8 +89,8 @@ The *overall p-value* is (< 2.2e-16). These *p-values* are all less than 0.05 an
 *R-Square* is 0.955, which means **model represents 95.5% of the data**.
 
 ## Detailed Procedures
-#### Read in data and fit the originial data to a model
-I first plot in all 10 variables in responsing to y. All the *p-values* to the variables are greater than 0.05, which indicates that none of the variable is significant. 
+#### Read in data and fit the original data to a model
+I first plot in all 10 variables in responding to y. All the *p-values* to the variables are greater than 0.05, which indicates that none of the variable is significant. 
 
 The 5 assumptions about linear regression are:
 
@@ -115,7 +115,7 @@ As we can see from the boxcox graph, &#955; is very close to 0. So we consider a
 
 ####Fit the log-transformed y
 
-After the transformation, some of the predictors are starting to become significant, namely, x3, x5, and intercept. The *overall p-value* also becomes very significant, comparing to before the transformaiton, where *p-value* = 0.36.
+After the transformation, some of the predictors are starting to become significant, namely, x3, x5, and intercept. The *overall p-value* also becomes very significant, comparing to before the transformation, where *p-value* = 0.36.
 
 ```
 Coefficients:
@@ -145,7 +145,7 @@ F-statistic: 17.48 on 10 and 58 DF,  p-value: 4.289e-14
 
 From the above graphs, we can see that outliers definitely exist, possibly, *data 10*.
 
-Obtain leverages and two measures that can be used to identify influential points, DFFITS (difference in fts) and Cook's Distance.
+Obtain leverages and two measures that can be used to identify influential points, DFFITS (difference in fits) and Cook's Distance.
 
 *Influence*
 
@@ -194,7 +194,7 @@ Obtain leverages and two measures that can be used to identify influential point
 0.006 0.001 0.004 0.016 0.001 0.000 0.000 0.011 0.001 0.002 0.000 0.003 0.001 0.016 0.011 0.001 0.000 0.000 0.000 0.000 0.002 0.000 0.005 0.000 0.006 
 ```
 
-From the output of influence, DFFITS (difference in fts), and Cook's Distance, we can see that *observation 10* is indeed an influential outlier. Hence we remove it.
+From the output of influence, DFFITS (difference in fits), and Cook's Distance, we can see that *observation 10* is indeed an influential outlier. Hence we remove it.
 
 After removing observation 10, the model fits the data better than before, as we can see in the following output table. Next, we will be choosing which predictors are actually significant.
 ```
@@ -219,7 +219,7 @@ Multiple R-squared:  0.9561,	Adjusted R-squared:  0.9511
 F-statistic: 191.6 on 10 and 88 DF,  p-value: < 2.2e-16
 ```
 
-####Check for multicolinearity issue
+####Check for multicollinearity issue
 We can see that x1 and x2 are highly correlated with 0.999 correlation, and 515 VIFs, which is way greater than 10, the threshold. 
 
 We will next apply automated search to search for significant predictors. If x1 and x2 are both in the result, we will remove one of them in the final predictors.
@@ -241,7 +241,7 @@ x10  0.033  0.158  0.160 -0.069 -0.112 -0.042  0.100 -0.051  0.078 -0.058  1.000
 ####Use automated search
 Now I use automated search, after removing *data 10* from the data set.
 
-Using automated forward search, we get *x2, x3, x4, and x5* are chosen, among which all are significant with *p-values* way less than 0.05. The over all fitting of the 4 predictors results in a *p-value* of (< 2.2e-16). This proves that after log-transformation, removing data 10 and automated forward selection, the model fits better. *x1 and x2* are **NOT** both in the result, so there is no multicolinearity issue.
+Using automated forward search, we get *x2, x3, x4, and x5* are chosen, among which all are significant with *p-values* way less than 0.05. The overall fitting of the 4 predictors results in a *p-value* of (< 2.2e-16). This proves that after log-transformation, removing data 10 and automated forward selection, the model fits better. *x1 and x2* are **NOT** both in the result, so there is no multicollinearity issue.
 ```
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
@@ -407,9 +407,9 @@ F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 With the given data set "dat.cvs", 
 
 * y is log-transformed
-* Entry 10 is reomoved due to large influence to the overall data
+* Entry 10 is removed due to large influence to the overall data
 * Predictors x1, x6, x7, x8, x9, and x10 are **removed** due to insignificance.
-* Predictors x2, x3, x4,and x5 are kept, and combined as a first order model.
+* Predictors x2, x3, x4, and x5 are kept, and combined as a first order model.
 
 The final model is
 
