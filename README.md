@@ -12,7 +12,7 @@ There are 100 instances of data, in total of 100 rows.
 
 **Language:** R
 
-####*First 20 Lines of Data:*
+#### *First 20 Lines of Data:*
 ```
                y          x1           x2          x3          x4           x5          x6          x7          x8           x9         x10
 1   2.436641e+02  1.08580359  1.114076637  0.45462375  1.69147892  0.106603041  1.90546080 -0.64313318  0.83133738  0.069397226  1.13955430
@@ -37,7 +37,7 @@ There are 100 instances of data, in total of 100 rows.
 20  2.748900e+01 -1.38924287 -1.443990181  2.09600223 -0.67593870  0.831477112  0.13696804 -0.05774661 -0.76973991 -0.788922227  1.45771451
 ```
 
-##Analysis methods
+## Analysis methods
 * Log Transformation
 * Detecting Outliers in Predictors with leverages
 * Detecting Influential Observations with DFFITS and Cook's Distance
@@ -47,18 +47,18 @@ There are 100 instances of data, in total of 100 rows.
 
 **Criteria for statistical significance is P<0.05.*
 
-##Results
-####Final model
+## Results
+#### Final model
 
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/regression.png" width="400">
 
-####Data Manipulations
+#### Data Manipulations
 * *y* is log-transformed
 * *Entry 10* is removed due to large influence to the overall data
 * Predictors *x1, x6, x7, x8, x9, and x10* are **removed** due to insignificance.
 * Predictors *x2, x3, x4, and x5* are kept, and combined as a first order model.
 
-####Result Summary
+#### Result Summary
 
 ```
 Call:
@@ -108,12 +108,12 @@ The residuals also do not have similar vertical variation across fits. Assumptio
 
 Hence, we consider using a *boxcox transformation* to test for log-likelihood.
 
-####Step 2: Boxcox transformation
+#### Step 2: Boxcox transformation
 As we can see from the boxcox graph, &#955; is very close to 0. So we consider a log-transformation.
 
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/boxcox.png" width="500">
 
-####Step 3: Fit the log-transformed y
+#### Step 3: Fit the log-transformed y
 
 After the transformation, some of the predictors are starting to become significant, namely, x3, x5, and intercept. The *overall p-value* also becomes very significant, comparing to before the transformation, where *p-value* = 0.36.
 
@@ -140,7 +140,7 @@ Multiple R-squared:  0.7508,	Adjusted R-squared:  0.7079
 F-statistic: 17.48 on 10 and 58 DF,  p-value: 4.289e-14
 ```
 
-####Step 4: Detect and remove outliers
+#### Step 4: Detect and remove outliers
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/fit.png" width="500">
 
 From the above graphs, we can see that outliers definitely exist, possibly, *data 10*.
@@ -219,7 +219,7 @@ Multiple R-squared:  0.9561,	Adjusted R-squared:  0.9511
 F-statistic: 191.6 on 10 and 88 DF,  p-value: < 2.2e-16
 ```
 
-####Step 5: Check for multicollinearity issue
+#### Step 5: Check for multicollinearity issue
 We can see that x1 and x2 are highly correlated with 0.999 correlation, and 515 VIFs, which is way greater than 10, the threshold. 
 
 We will next apply automated search to search for significant predictors. If x1 and x2 are both in the result, we will remove one of them in the final predictors.
@@ -238,7 +238,7 @@ x9  -0.096 -0.085 -0.088 -0.007  0.085 -0.087 -0.166 -0.068  0.044  1.000 -0.058
 x10  0.033  0.158  0.160 -0.069 -0.112 -0.042  0.100 -0.051  0.078 -0.058  1.000
 ```
 
-####Step 6: Use automated search
+#### Step 6: Use automated search
 Now I use automated search, after removing *data 10* from the data set.
 
 Using automated forward search, we get *x2, x3, x4, and x5* are chosen, among which all are significant with *p-values* way less than 0.05. The overall fitting of the 4 predictors results in a *p-value* of (< 2.2e-16). This proves that after log-transformation, removing data 10 and automated forward selection, the model fits better. *x1 and x2* are **NOT** both in the result, so there is no multicollinearity issue.
@@ -257,7 +257,7 @@ Residual standard error: 0.9338 on 94 degrees of freedom
 Multiple R-squared:  0.955,	Adjusted R-squared:  0.9531 
 F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 ```
-####Step 7: Model Comparison and Selection
+#### Step 7: Model Comparison and Selection
 Next, we will use techniques in Model Comparison and Selection, by comparing *R2.adj, PRESS, AIC, BIC, and Cp*. We will be using data after removing outlier and log-transformation. 
 ``` R
 > ###############################
@@ -403,7 +403,7 @@ F-statistic: 498.6 on 4 and 94 DF,  p-value: < 2.2e-16
 ```
 <img src="https://raw.githubusercontent.com/ss2cp/Linear-Regression-Project/master/Results/finalfit.png" width="500">
 
-##Conclusion
+## Conclusion
 With the given data set "dat.cvs", 
 
 * y is log-transformed
